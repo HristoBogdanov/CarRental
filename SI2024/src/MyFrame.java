@@ -91,6 +91,7 @@ public class MyFrame extends JFrame{
 		deleteBt.addActionListener(new DeleteAction());
 		searchBt.addActionListener(new SearchAction());
 		refreshBt.addActionListener(new RefreshAction());
+		editBt.addActionListener(new EditAction());
 		
 		//downPanel---------------------------------
 		
@@ -181,7 +182,38 @@ public class MyFrame extends JFrame{
 		
 	}
 	
-	class MouseAction implements MouseListener{
+	class EditAction implements ActionListener{
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			
+			conn=DBConnection.getConnection();
+			String sql="update person set fname=?, lname=?, sex=?, age=?, salary=? where id=?";
+			
+			try {
+				state=conn.prepareStatement(sql);
+				state.setString(1, fnameTF.getText());
+				state.setString(2, lnameTF.getText());
+				state.setString(3, sexCombo.getSelectedItem().toString());
+				state.setInt(4, Integer.parseInt(ageTF.getText()));
+				state.setFloat(5, Float.parseFloat(salaryTF.getText()));
+				state.setInt(6, id);
+				
+				state.execute();
+				refreshTable();
+				refreshPersonCombo();
+				clearForm();
+				
+			} catch (SQLException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			
+		}
+		
+	}
+	
+class MouseAction implements MouseListener{
 
 		@Override
 		public void mouseClicked(MouseEvent e) {

@@ -15,7 +15,6 @@ public class NewFrame extends JFrame{
         this.setSize(400, 600);
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         
-        // Get the content panes of the passed frames
         panelPerson = (JPanel)framePerson.getContentPane();
         panelCar = (JPanel)frameCar.getContentPane();
         panelRenta = (JPanel)frameRenta.getContentPane();
@@ -23,24 +22,21 @@ public class NewFrame extends JFrame{
         
         tab = new JTabbedPane();
         
-        tab.add("Клиенти", panelPerson); // Assuming the frames have titles, otherwise, use custom labels
+        tab.add("Клиенти", panelPerson);
         tab.add("Коли", panelCar);
         tab.add("Наем", panelRenta);
         tab.add("Справка по ...", panelSpr);
         
         this.add(tab);
         
-        this.setVisible(true); // Set visibility to true after adding components
+        this.setVisible(true);
     }
 
     public static void main(String[] args) {
-        // Assuming you have JFrame objects for personFrame, carFrame, rentaFrame, and sprFrame
         JFrame personFrame = new JFrame();
         JFrame carFrame = new JFrame();
         JFrame rentaFrame = new JFrame();
         JFrame sprFrame = new JFrame();
-
-        // Populate the frames with components as needed
         
         NewFrame newFrame = new NewFrame(personFrame, carFrame, rentaFrame, sprFrame);
     }
