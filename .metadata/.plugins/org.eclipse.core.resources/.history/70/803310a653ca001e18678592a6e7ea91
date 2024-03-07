@@ -1,0 +1,13 @@
+import javax.swing.JFrame;
+
+public class NewFrame extends JFrame{
+	
+	public NewFrame() {
+		this.setSize(400, 600);
+		this.setDefaultCloseOperation(EXIT_ON_CLOSE);
+		
+		
+		this.setVisible(true);
+	}
+
+}

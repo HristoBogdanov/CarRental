@@ -1,0 +1,5 @@
+INDEX VERSION 1.134+D:\users\fmi\Desktop\SI2024\.metadata\.plugins\org.eclipse.jdt.core
+2124875388.index
+1865797976.index
+1471960537.index
+342714786.index
