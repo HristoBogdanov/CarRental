@@ -19,7 +19,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 
-public class MyFrame extends JFrame{
+public class RentFrame extends JFrame{
 	
 	Connection conn=null;
 	PreparedStatement state=null;
@@ -34,31 +34,27 @@ public class MyFrame extends JFrame{
 	
 	
 	//initialize labels
-	JLabel fnameL=new JLabel("Име:");
-	JLabel lnameL=new JLabel("Фамилия:");
-	JLabel sexL=new JLabel("Пол:");
-	JLabel ageL=new JLabel("Години:");
-	JLabel salaryL=new JLabel("Заплата:");
+	JLabel personL=new JLabel("Име на наемателя:");
+	JLabel carL=new JLabel("Автомобил:");
+	JLabel startDateL=new JLabel("Дата на наемане:");
+	JLabel endDateL=new JLabel("Дата на връщане:");
+	JLabel priceL=new JLabel("Цена:");
 	
 	
 	//initialize text input fileds
-	JTextField fnameTF=new JTextField();
-	JTextField lnameTF=new JTextField();
-	JTextField ageTF=new JTextField();
-	JTextField salaryTF=new JTextField();
+	JTextField startDateTF=new JTextField();
+	JTextField endDateTF=new JTextField();
+	JTextField priceTF=new JTextField();
 	
-	
-	//prepare data for sex combo box
-	String[] item= {"Мъж","Жена"};
-	JComboBox<String> sexCombo=new JComboBox<String>(item);
-	//JComboBox<String> personCombo=new JComboBox<String>();
-	
+	//person and car combo boxes
+	JComboBox<String> personCombo=new JComboBox<String>();
+	JComboBox<String> carCombo=new JComboBox<String>();
 	
 	//initialize buttons
 	JButton addBt=new JButton("Добавяне");
 	JButton deleteBt=new JButton("Изтриване");
 	JButton editBt=new JButton("Промяна");
-	JButton searchBt=new JButton("Търсене по години");
+	JButton searchBt=new JButton("Търсене по име на наемател");
 	JButton refreshBt=new JButton("Обнови");
 	
 	
@@ -68,23 +64,23 @@ public class MyFrame extends JFrame{
 	
 	
 	//visualizing the frame on the screen
-	public MyFrame() {
+	public RentFrame() {
 		this.setSize(400, 600);
 		this.setDefaultCloseOperation(EXIT_ON_CLOSE);
 		this.setLayout(new GridLayout(3,1));
 		
 		//upPanel-----------------------------------
 		upPanel.setLayout(new GridLayout(5,2));
-		upPanel.add(fnameL);
-		upPanel.add(fnameTF);
-		upPanel.add(lnameL);
-		upPanel.add(lnameTF);
-		upPanel.add(sexL);
-		upPanel.add(sexCombo);
-		upPanel.add(ageL);
-		upPanel.add(ageTF);
-		upPanel.add(salaryL);
-		upPanel.add(salaryTF);
+		upPanel.add(personL);
+		upPanel.add(personCombo);
+		upPanel.add(carL);
+		upPanel.add(carCombo);
+		upPanel.add(startDateL);
+		upPanel.add(startDateTF);
+		upPanel.add(endDateL);
+		upPanel.add(endDateTF);
+		upPanel.add(priceL);
+		upPanel.add(priceTF);
 		
 		
 		this.add(upPanel);
@@ -118,7 +114,8 @@ public class MyFrame extends JFrame{
 		
 		
 		refreshTable();
-		//refreshPersonCombo();
+		refreshPersonCombo();
+		refreshCarCombo();
 		
 		this.setVisible(true);
 	}
@@ -138,33 +135,54 @@ public class MyFrame extends JFrame{
 		}
 	}
 	
-//	public void refreshPersonCombo() {
-//		personCombo.removeAllItems();
-//		conn=DBConnection.getConnection();
-//		String sql="select id, fname, lname from person";
-//		String item="";
-//		
-//		try {
-//			state=conn.prepareStatement(sql);
-//			result=state.executeQuery();
-//			while(result.next()) {
-//				item=result.getObject(1).toString()+"."+
-//			result.getObject(2).toString()+" "+
-//			result.getObject(3).toString();
-//				
-//				personCombo.addItem(item);
-//			}
-//		} catch (SQLException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//	}
+	public void refreshPersonCombo() {
+		personCombo.removeAllItems();
+		conn=DBConnection.getConnection();
+		String sql="select fname, lname from person";
+		String item="";
+		
+		try {
+			state=conn.prepareStatement(sql);
+			result=state.executeQuery();
+			while(result.next()) {
+				item=
+				result.getObject(1).toString()+" "+
+				result.getObject(2).toString();
+				
+				personCombo.addItem(item);
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public void refreshCarCombo() {
+		carCombo.removeAllItems();
+		conn=DBConnection.getConnection();
+		String sql="select Make, Model from Cars";
+		String item="";
+		
+		try {
+			state=conn.prepareStatement(sql);
+			result=state.executeQuery();
+			while(result.next()) {
+				item=
+				result.getObject(1).toString()+" "+
+				result.getObject(2).toString();
+				
+				carCombo.addItem(item);
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 	
 	public void clearForm() {
-		fnameTF.setText("");
-		lnameTF.setText("");
-		ageTF.setText("");
-		salaryTF.setText("");
+		startDateTF.setText("");
+		endDateTF.setText("");
+		priceTF.setText("");
 	}
 
 	class AddAction implements ActionListener{
@@ -173,19 +191,15 @@ public class MyFrame extends JFrame{
 		public void actionPerformed(ActionEvent e) {
 			
 			conn=DBConnection.getConnection();
-			String sql="insert into person(fname, lname, sex, age, salary) values(?,?,?,?,?)";
+			String sql="insert into Rent(PersonID, CarID, RentalDate, ReturnDate, RentalFee) values(?,?,?,?,?)";
 			
 			try {
 				state=conn.prepareStatement(sql);
-				state.setString(1, fnameTF.getText());
-				state.setString(2, lnameTF.getText());
-				state.setString(3, sexCombo.getSelectedItem().toString());
-				state.setInt(4, Integer.parseInt(ageTF.getText()));
-				state.setFloat(5, Float.parseFloat(salaryTF.getText()));
 				
 				state.execute();
 				refreshTable();
-				//refreshPersonCombo();
+				refreshPersonCombo();
+				refreshCarCombo();
 				clearForm();
 				
 			} catch (SQLException e1) {
@@ -207,16 +221,17 @@ public class MyFrame extends JFrame{
 			
 			try {
 				state=conn.prepareStatement(sql);
-				state.setString(1, fnameTF.getText());
-				state.setString(2, lnameTF.getText());
-				state.setString(3, sexCombo.getSelectedItem().toString());
-				state.setInt(4, Integer.parseInt(ageTF.getText()));
-				state.setFloat(5, Float.parseFloat(salaryTF.getText()));
+//				state.setString(1, fnameTF.getText());
+//				state.setString(2, lnameTF.getText());
+//				state.setString(3, sexCombo.getSelectedItem().toString());
+//				state.setInt(4, Integer.parseInt(ageTF.getText()));
+//				state.setFloat(5, Float.parseFloat(salaryTF.getText()));
 				state.setInt(6, id);
 				
 				state.execute();
 				refreshTable();
-				//refreshPersonCombo();
+				refreshPersonCombo();
+				refreshCarCombo();
 				clearForm();
 				
 			} catch (SQLException e1) {
@@ -235,16 +250,16 @@ public class MyFrame extends JFrame{
 			
 			int row=table.getSelectedRow();
 			id=Integer.parseInt(table.getValueAt(row, 0).toString());
-			fnameTF.setText(table.getValueAt(row, 1).toString());
-			lnameTF.setText(table.getValueAt(row, 2).toString());
-			ageTF.setText(table.getValueAt(row, 4).toString());
-			salaryTF.setText(table.getValueAt(row, 5).toString());
-			if(table.getValueAt(row, 3).toString().equals("Мъж")) {
-				sexCombo.setSelectedIndex(0);
-			}
-			else {
-				sexCombo.setSelectedIndex(1);
-			}
+//			fnameTF.setText(table.getValueAt(row, 1).toString());
+//			lnameTF.setText(table.getValueAt(row, 2).toString());
+//			ageTF.setText(table.getValueAt(row, 4).toString());
+//			salaryTF.setText(table.getValueAt(row, 5).toString());
+//			if(table.getValueAt(row, 3).toString().equals("Мъж")) {
+//				sexCombo.setSelectedIndex(0);
+//			}
+//			else {
+//				sexCombo.setSelectedIndex(1);
+//			}
 			
 			
 		}
@@ -288,7 +303,8 @@ public class MyFrame extends JFrame{
 				state.setInt(1, id);
 				state.execute();
 				refreshTable();
-				//refreshPersonCombo();
+				refreshPersonCombo();
+				refreshCarCombo();
 				clearForm();
 				id=-1;
 			} catch (SQLException e1) {
@@ -309,7 +325,7 @@ public class MyFrame extends JFrame{
 			String sql="select * from person where age=?";
 			try {
 				state=conn.prepareStatement(sql);
-				state.setInt(1, Integer.parseInt(ageTF.getText()));
+//				state.setInt(1, Integer.parseInt(ageTF.getText()));
 				result=state.executeQuery();
 				table.setModel(new MyModel(result));
 			} catch (SQLException e1) {
