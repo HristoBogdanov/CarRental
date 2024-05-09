@@ -25,6 +25,8 @@ public class RentFrame extends JFrame{
 	PreparedStatement state=null;
 	ResultSet result=null;
 	int id=-1;
+	int personId=-1;
+	int carId=-1;
 	
 	
 	//initialize the 3 panels
@@ -45,6 +47,7 @@ public class RentFrame extends JFrame{
 	JTextField startDateTF=new JTextField();
 	JTextField endDateTF=new JTextField();
 	JTextField priceTF=new JTextField();
+
 	
 	//person and car combo boxes
 	JComboBox<String> personCombo=new JComboBox<String>();
@@ -54,7 +57,7 @@ public class RentFrame extends JFrame{
 	JButton addBt=new JButton("Добавяне");
 	JButton deleteBt=new JButton("Изтриване");
 	JButton editBt=new JButton("Промяна");
-	JButton searchBt=new JButton("Търсене по име на наемател");
+	JButton searchBt=new JButton("Търсене по максимална цена");
 	JButton refreshBt=new JButton("Обнови");
 	
 	
@@ -65,7 +68,7 @@ public class RentFrame extends JFrame{
 	
 	//visualizing the frame on the screen
 	public RentFrame() {
-		this.setSize(400, 600);
+		this.setSize(1000, 600);
 		this.setDefaultCloseOperation(EXIT_ON_CLOSE);
 		this.setLayout(new GridLayout(3,1));
 		
@@ -92,7 +95,6 @@ public class RentFrame extends JFrame{
 		midPanel.add(editBt);
 		midPanel.add(searchBt);
 		midPanel.add(refreshBt);
-		//midPanel.add(personCombo);
 		
 		this.add(midPanel);
 		
@@ -106,7 +108,7 @@ public class RentFrame extends JFrame{
 		
 		//downPanel---------------------------------
 		
-		myScroll.setPreferredSize(new Dimension(350, 150));
+		myScroll.setPreferredSize(new Dimension(950, 150));
 		downPanel.add(myScroll);
 		
 		this.add(downPanel);
@@ -123,9 +125,13 @@ public class RentFrame extends JFrame{
 	public void refreshTable() {
 		conn=DBConnection.getConnection();
 		try {
-			state=conn.prepareStatement("select * from person");
+			state=conn.prepareStatement("SELECT RentID, fname, lname, make, model, RentalDate, ReturnDate, RentalFee from person "
+									  + "JOIN Rent ON person.id=rent.PersonID "
+									  + "JOIN Cars ON rent.CarID=cars.CarID");
+			
 			result=state.executeQuery();
 			table.setModel(new MyModel(result));
+			
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -138,7 +144,7 @@ public class RentFrame extends JFrame{
 	public void refreshPersonCombo() {
 		personCombo.removeAllItems();
 		conn=DBConnection.getConnection();
-		String sql="select fname, lname from person";
+		String sql="select ID, fname, lname from person";
 		String item="";
 		
 		try {
@@ -146,8 +152,10 @@ public class RentFrame extends JFrame{
 			result=state.executeQuery();
 			while(result.next()) {
 				item=
-				result.getObject(1).toString()+" "+
-				result.getObject(2).toString();
+				result.getObject(2).toString()+" "+
+				result.getObject(3).toString();
+				
+				personId=Integer.parseInt(result.getObject(1).toString());
 				
 				personCombo.addItem(item);
 			}
@@ -160,7 +168,7 @@ public class RentFrame extends JFrame{
 	public void refreshCarCombo() {
 		carCombo.removeAllItems();
 		conn=DBConnection.getConnection();
-		String sql="select Make, Model from Cars";
+		String sql="select CarID, Make, Model from Cars";
 		String item="";
 		
 		try {
@@ -168,8 +176,10 @@ public class RentFrame extends JFrame{
 			result=state.executeQuery();
 			while(result.next()) {
 				item=
-				result.getObject(1).toString()+" "+
-				result.getObject(2).toString();
+				result.getObject(2).toString()+" "+
+				result.getObject(3).toString();
+				
+				carId=Integer.parseInt(result.getObject(1).toString());
 				
 				carCombo.addItem(item);
 			}
@@ -194,8 +204,14 @@ public class RentFrame extends JFrame{
 			String sql="insert into Rent(PersonID, CarID, RentalDate, ReturnDate, RentalFee) values(?,?,?,?,?)";
 			
 			try {
+				updatePersonId(personCombo.getItemAt(personCombo.getSelectedIndex()));
+				updateCarId(carCombo.getItemAt(carCombo.getSelectedIndex()));
 				state=conn.prepareStatement(sql);
-				
+				state.setInt(1, personId);
+				state.setInt(2, carId);
+				state.setString(3, startDateTF.getText());
+				state.setString(4, endDateTF.getText());
+				state.setFloat(5, Float.parseFloat(priceTF.getText()));
 				state.execute();
 				refreshTable();
 				refreshPersonCombo();
@@ -217,15 +233,17 @@ public class RentFrame extends JFrame{
 		public void actionPerformed(ActionEvent e) {
 			
 			conn=DBConnection.getConnection();
-			String sql="update person set fname=?, lname=?, sex=?, age=?, salary=? where id=?";
+			String sql="update Rent set PersonID=?, CarID=?, RentalDate=?, ReturnDate=?, RentalFee=? where RentID=?";
 			
 			try {
+				updatePersonId(personCombo.getItemAt(personCombo.getSelectedIndex()));
+				updateCarId(carCombo.getItemAt(carCombo.getSelectedIndex()));
 				state=conn.prepareStatement(sql);
-//				state.setString(1, fnameTF.getText());
-//				state.setString(2, lnameTF.getText());
-//				state.setString(3, sexCombo.getSelectedItem().toString());
-//				state.setInt(4, Integer.parseInt(ageTF.getText()));
-//				state.setFloat(5, Float.parseFloat(salaryTF.getText()));
+				state.setInt(1, personId);
+				state.setInt(2, carId);
+				state.setString(3, startDateTF.getText());
+				state.setString(4, endDateTF.getText());
+				state.setFloat(5, Float.parseFloat(priceTF.getText()));
 				state.setInt(6, id);
 				
 				state.execute();
@@ -250,18 +268,41 @@ public class RentFrame extends JFrame{
 			
 			int row=table.getSelectedRow();
 			id=Integer.parseInt(table.getValueAt(row, 0).toString());
-//			fnameTF.setText(table.getValueAt(row, 1).toString());
-//			lnameTF.setText(table.getValueAt(row, 2).toString());
-//			ageTF.setText(table.getValueAt(row, 4).toString());
-//			salaryTF.setText(table.getValueAt(row, 5).toString());
-//			if(table.getValueAt(row, 3).toString().equals("Мъж")) {
-//				sexCombo.setSelectedIndex(0);
-//			}
-//			else {
-//				sexCombo.setSelectedIndex(1);
-//			}
 			
+			String personFName=table.getValueAt(row, 1).toString();
+			String personLName=table.getValueAt(row, 2).toString();
+			updatePersonCombo(personFName, personLName);
 			
+			String carMake=table.getValueAt(row, 3).toString();
+			String carModel=table.getValueAt(row, 4).toString();
+			updateCarCombo(carMake,carModel);
+			
+			startDateTF.setText(table.getValueAt(row, 5).toString());
+			endDateTF.setText(table.getValueAt(row, 6).toString());
+			priceTF.setText(table.getValueAt(row, 7).toString());
+		}
+		
+		private void updatePersonCombo(String firstName, String lastName) {
+		    String fullNameToFind = firstName + " " + lastName;
+		    for (int i = 0; i < personCombo.getItemCount(); i++) {
+		        String item = personCombo.getItemAt(i);
+		        if (item.equals(fullNameToFind)) {
+		            personCombo.setSelectedIndex(i);
+		            break;
+		        }
+		    }
+		}
+		
+		
+		private void updateCarCombo(String make, String model) {
+		    String fullNameToFind = make + " " + model;
+		    for (int i = 0; i < carCombo.getItemCount(); i++) {
+		        String item = carCombo.getItemAt(i);
+		        if (item.equals(fullNameToFind)) {
+		        	carCombo.setSelectedIndex(i);
+		            break;
+		        }
+		    }
 		}
 
 		@Override
@@ -290,13 +331,61 @@ public class RentFrame extends JFrame{
 		
 	}
 	
+	public void updatePersonId(String fullName) {
+		conn=DBConnection.getConnection();
+		String sql="select ID, fname, lname from person";
+
+		try {
+			state=conn.prepareStatement(sql);
+			result=state.executeQuery();
+			while(result.next()) 
+			{			
+				String currentFullName=result.getObject(2).toString()+" "+result.getObject(3).toString();
+				if(currentFullName.equals(fullName))
+				{
+					personId=Integer.parseInt(result.getObject(1).toString());
+					return;
+				}
+			}
+		} 
+		
+		catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public void updateCarId(String fullName) {
+		conn=DBConnection.getConnection();
+		String sql="select CarID, Make, Model from Cars";
+
+		try {
+			state=conn.prepareStatement(sql);
+			result=state.executeQuery();
+			while(result.next()) 
+			{			
+				String currentFullName=result.getObject(2).toString()+" "+result.getObject(3).toString();
+				if(currentFullName.equals(fullName))
+				{
+					carId=Integer.parseInt(result.getObject(1).toString());
+					return;
+				}
+			}
+		} 
+		
+		catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 	class DeleteAction implements ActionListener{
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			
 			conn=DBConnection.getConnection();
-			String sql="delete from person where id=?";
+			String sql="delete from Rent where RentID=?";
 			
 			try {
 				state=conn.prepareStatement(sql);
@@ -322,12 +411,15 @@ public class RentFrame extends JFrame{
 		public void actionPerformed(ActionEvent e) {
 			
 			conn=DBConnection.getConnection();
-			String sql="select * from person where age=?";
+			String sql="select * from Rent where RentalFee<=?";
 			try {
-				state=conn.prepareStatement(sql);
-//				state.setInt(1, Integer.parseInt(ageTF.getText()));
-				result=state.executeQuery();
-				table.setModel(new MyModel(result));
+				if(!priceTF.getText().isEmpty())
+				{
+					state=conn.prepareStatement(sql);
+					state.setFloat(1, Float.parseFloat(priceTF.getText()));
+					result=state.executeQuery();
+					table.setModel(new MyModel(result));
+				}
 			} catch (SQLException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -346,7 +438,9 @@ public class RentFrame extends JFrame{
 		public void actionPerformed(ActionEvent e) {
 			
 			refreshTable();
-			
+			clearForm();
+			refreshPersonCombo();
+			refreshCarCombo();
 		}
 		
 	}

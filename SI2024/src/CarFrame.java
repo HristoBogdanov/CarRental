@@ -59,7 +59,7 @@ public class CarFrame extends JFrame{
 	
 	//visualizing the frame on the screen
 	public CarFrame() {
-		this.setSize(400, 600);
+		this.setSize(1000, 600);
 		this.setDefaultCloseOperation(EXIT_ON_CLOSE);
 		this.setLayout(new GridLayout(3,1));
 		
@@ -95,7 +95,7 @@ public class CarFrame extends JFrame{
 		
 		//downPanel---------------------------------
 		
-		myScroll.setPreferredSize(new Dimension(350, 150));
+		myScroll.setPreferredSize(new Dimension(950, 150));
 		downPanel.add(myScroll);
 		
 		this.add(downPanel);
@@ -255,10 +255,13 @@ public class CarFrame extends JFrame{
 			conn=DBConnection.getConnection();
 			String sql="select * from Cars where Make=?";
 			try {
-				state=conn.prepareStatement(sql);
-				state.setString(1, makeTF.getText());
-				result=state.executeQuery();
-				table.setModel(new MyModel(result));
+				if(!makeTF.getText().isEmpty())
+				{					
+					state=conn.prepareStatement(sql);
+					state.setString(1, makeTF.getText());
+					result=state.executeQuery();
+					table.setModel(new MyModel(result));
+				}
 			} catch (SQLException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -277,7 +280,7 @@ public class CarFrame extends JFrame{
 		public void actionPerformed(ActionEvent e) {
 			
 			refreshTable();
-			
+			clearForm();
 		}
 		
 	}

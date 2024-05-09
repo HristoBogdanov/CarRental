@@ -11,21 +11,21 @@ public class NewFrame extends JFrame{
     
     JTabbedPane tab;
 
-    public NewFrame(JFrame framePerson, JFrame frameCar, JFrame frameRenta, JFrame frameSpr) {
-        this.setSize(400, 600);
+    public NewFrame() {
+        this.setSize(1000, 600);
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         
-        panelPerson = (JPanel)framePerson.getContentPane();
-        panelCar = (JPanel)frameCar.getContentPane();
-        panelRenta = (JPanel)frameRenta.getContentPane();
-        panelSpr = (JPanel)frameSpr.getContentPane();
+        JFrame personFrame = new MyFrame();
+        JFrame carFrame = new CarFrame();
+        JFrame rentFrame = new RentFrame();
+        JFrame searchFrame = new SearchFrame();
         
         tab = new JTabbedPane();
         
-        tab.add("Клиенти", panelPerson);
-        tab.add("Коли", panelCar);
-        tab.add("Наем", panelRenta);
-        tab.add("Справка по ...", panelSpr);
+        tab.add("Клиенти", personFrame.getContentPane());
+        tab.add("Коли", carFrame.getContentPane());
+        tab.add("Наем", rentFrame.getContentPane());
+        tab.add("Справка", searchFrame.getContentPane());
         
         this.add(tab);
         
@@ -33,11 +33,6 @@ public class NewFrame extends JFrame{
     }
 
     public static void main(String[] args) {
-        JFrame personFrame = new JFrame();
-        JFrame carFrame = new JFrame();
-        JFrame rentaFrame = new JFrame();
-        JFrame sprFrame = new JFrame();
         
-        NewFrame newFrame = new NewFrame(personFrame, carFrame, rentaFrame, sprFrame);
     }
 }
