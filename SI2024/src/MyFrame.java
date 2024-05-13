@@ -281,11 +281,12 @@ public class MyFrame extends JFrame{
 		public void actionPerformed(ActionEvent e) {
 			
 			conn=DBConnection.getConnection();
-			String sql="delete from person where id=?";
+			String sql="delete from rent where personid=?; delete from person where id=?";
 			
 			try {
 				state=conn.prepareStatement(sql);
 				state.setInt(1, id);
+				state.setInt(2, id);
 				state.execute();
 				refreshTable();
 				//refreshPersonCombo();
