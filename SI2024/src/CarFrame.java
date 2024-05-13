@@ -228,11 +228,12 @@ public class CarFrame extends JFrame{
 		public void actionPerformed(ActionEvent e) {
 			
 			conn=DBConnection.getConnection();
-			String sql="delete from Cars where CarID=?";
+			String sql="delete from rent where carid=?; delete from Cars where CarID=?";
 			
 			try {
 				state=conn.prepareStatement(sql);
 				state.setInt(1, id);
+				state.setInt(2, id);
 				state.execute();
 				refreshTable();
 				//refreshPersonCombo();
